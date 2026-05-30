@@ -42,3 +42,66 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* ---------- landing page motion (CSS-only, reduced-motion safe) ---------- */
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes lp-shine {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+.lp-rise {
+  opacity: 0;
+  animation: lp-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.lp-float {
+  animation: lp-float 6s ease-in-out infinite;
+}
+.lp-shimmer {
+  background: linear-gradient(
+    100deg,
+    #e7a824 20%,
+    #fdf8ec 40%,
+    #edc04e 60%,
+    #b96a0f 80%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: lp-shine 5s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-rise,
+  .lp-float,
+  .lp-shimmer {
+    animation: none;
+    opacity: 1;
+  }
+  .lp-shimmer {
+    color: #edc04e;
+  }
+}
