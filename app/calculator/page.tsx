@@ -302,6 +302,49 @@ function BandBadge({ band }: { band: Band }) {
   );
 }
 
+/** Buy/sell verdict from a coin's bubble percent. Coin-size-agnostic. */
+function pctVerdict(pct: number): { label: string; tone: Tone } {
+  if (pct < 0) return { label: "بخر", tone: "buy" };
+  if (pct < 3) return { label: "بخر / متعادل", tone: "buy" };
+  if (pct < 7) return { label: "خنثی", tone: "neutral" };
+  if (pct < 12) return { label: "احتیاط", tone: "caution" };
+  return { label: "بفروش", tone: "sell" };
+}
+
+function VerdictGauge({ b }: { b: Bubble | null }) {
+  if (!b) {
+    return (
+      <span
+        className="flex h-7 items-center justify-center rounded-lg px-2 text-[11px] font-bold whitespace-nowrap"
+        style={{
+          background: "var(--card-2)",
+          color: "var(--muted)",
+          border: "1px solid var(--border)",
+          minWidth: "4.5rem",
+        }}
+      >
+        —
+      </span>
+    );
+  }
+  const v = pctVerdict(b.pct);
+  const c = TONE_COLOR[v.tone];
+  return (
+    <span
+      className="flex h-7 items-center justify-center rounded-lg px-2 text-[11px] font-bold whitespace-nowrap"
+      style={{
+        background: c.bg,
+        color: c.fg,
+        border: `1px solid ${c.fg}55`,
+        minWidth: "4.5rem",
+      }}
+      title={`حباب: ${fmtNum(b.pct, 1)}٪`}
+    >
+      {v.label}
+    </span>
+  );
+}
+
 function BubblePill({ b }: { b: Bubble | null }) {
   if (!b) return <span className="text-xs" style={{ color: "var(--muted)" }}>—</span>;
   const pos = b.toman >= 0;
@@ -348,11 +391,15 @@ export default function Page() {
   const [money, setMoney] = useState("");
   const [weight, setWeight] = useState("");
 
-  // market prices (for bubble)
+  // market prices (for bubble) — initialized empty, auto-filled from derived
+  // intrinsic values until the user edits the field (then we leave it alone).
   const [mFull, setMFull] = useState("");
   const [mHalf, setMHalf] = useState("");
   const [mQuarter, setMQuarter] = useState("");
   const [mMelted, setMMelted] = useState(""); // melted gold market price per gram
+  const [mFullDirty, setMFullDirty] = useState(false);
+  const [mHalfDirty, setMHalfDirty] = useState(false);
+  const [mQuarterDirty, setMQuarterDirty] = useState(false);
 
   const loadOunce = useCallback(async () => {
     setMeta((m) => ({ ...m, loading: true, error: null }));
@@ -407,6 +454,20 @@ export default function Page() {
     [ounce, dollar],
   );
   const d = useMemo(() => derive(inputs), [inputs]);
+
+  // Auto-fill bubble market-price fields with the current intrinsic value, but
+  // only while the user hasn't touched that specific field. The moment they
+  // type, we mark it dirty and stop overwriting.
+  useEffect(() => {
+    if (!mFullDirty && d.fullCoin > 0) setMFull(cleanNumInput(String(Math.round(d.fullCoin))));
+  }, [d.fullCoin, mFullDirty]);
+  useEffect(() => {
+    if (!mHalfDirty && d.halfCoin > 0) setMHalf(cleanNumInput(String(Math.round(d.halfCoin))));
+  }, [d.halfCoin, mHalfDirty]);
+  useEffect(() => {
+    if (!mQuarterDirty && d.quarterCoin > 0)
+      setMQuarter(cleanNumInput(String(Math.round(d.quarterCoin))));
+  }, [d.quarterCoin, mQuarterDirty]);
 
   const gramK = useMemo(() => gramOfKarat(d.mazaneh17, karat), [d.mazaneh17, karat]);
   const boughtWeight = useMemo(
@@ -616,10 +677,44 @@ export default function Page() {
         subtitle="قیمت بازار سکه را وارد کن تا حباب (اختلاف با ارزش ذاتی) محاسبه شود"
       >
         <div className="grid grid-cols-1 gap-3">
-          <BubbleInput label="قیمت بازار سکه تمام" value={mFull} onChange={setMFull} b={bubbles.full} info={HELP.bubble} />
-          <BubbleInput label="قیمت بازار نیم‌سکه" value={mHalf} onChange={setMHalf} b={bubbles.half} info={HELP.bubble} />
-          <BubbleInput label="قیمت بازار ربع‌سکه" value={mQuarter} onChange={setMQuarter} b={bubbles.quarter} info={HELP.bubble} />
+          <BubbleInput
+            label="قیمت بازار سکه تمام"
+            value={mFull}
+            onChange={(v) => {
+              setMFullDirty(true);
+              setMFull(v);
+            }}
+            b={bubbles.full}
+            info={HELP.bubble}
+            autoFilled={!mFullDirty}
+          />
+          <BubbleInput
+            label="قیمت بازار نیم‌سکه"
+            value={mHalf}
+            onChange={(v) => {
+              setMHalfDirty(true);
+              setMHalf(v);
+            }}
+            b={bubbles.half}
+            info={HELP.bubble}
+            autoFilled={!mHalfDirty}
+          />
+          <BubbleInput
+            label="قیمت بازار ربع‌سکه"
+            value={mQuarter}
+            onChange={(v) => {
+              setMQuarterDirty(true);
+              setMQuarter(v);
+            }}
+            b={bubbles.quarter}
+            info={HELP.bubble}
+            autoFilled={!mQuarterDirty}
+          />
         </div>
+        <p className="mt-2 text-[11px]" style={{ color: "var(--muted)" }}>
+          مقدارها به‌صورت پیش‌فرض از «ارزش ذاتی» پر می‌شوند؛ قیمت واقعی بازار را
+          وارد کنید تا حباب و سیگنال خرید/فروش به‌روز شود.
+        </p>
 
         {hasAnyMarket && (
           <div
@@ -774,16 +869,51 @@ function BubbleInput({
   onChange,
   b,
   info,
+  autoFilled,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   b: Bubble | null;
   info?: string;
+  /** True until the user types — switches the row from "auto-filled hint" to "live". */
+  autoFilled?: boolean;
 }) {
+  // When auto-filled (value == intrinsic), bubble is ~0 → show a neutral
+  // "ارزش ذاتی" hint instead of a buy/sell signal.
+  const showVerdict = !autoFilled && b !== null;
   return (
     <div>
-      <NumField label={label} value={value} onChange={onChange} suffix="تومان" placeholder="قیمت بازار" info={info} />
+      <div className="flex items-end gap-2">
+        <div className="flex-1 min-w-0">
+          <NumField
+            label={label}
+            value={value}
+            onChange={onChange}
+            suffix="تومان"
+            placeholder="قیمت بازار"
+            info={info}
+          />
+        </div>
+        <div className="pb-1">
+          {showVerdict ? (
+            <VerdictGauge b={b} />
+          ) : (
+            <span
+              className="flex h-7 items-center justify-center rounded-lg px-2 text-[11px] font-bold whitespace-nowrap"
+              style={{
+                background: "var(--card-2)",
+                color: "var(--muted)",
+                border: "1px solid var(--border)",
+                minWidth: "4.5rem",
+              }}
+              title="مقدار خودکار از ارزش ذاتی"
+            >
+              ذاتی
+            </span>
+          )}
+        </div>
+      </div>
       {b && (
         <div className="mt-1.5 flex items-center justify-between">
           <span className="num text-xs" style={{ color: "var(--muted)" }}>
