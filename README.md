@@ -38,9 +38,11 @@ vercel        # preview
 vercel --prod # production
 ```
 
+
 Then register the production HTTPS URL in **@BotFather → Bot Settings → Menu Button**
 (or via `setChatMenuButton`) as a Web App, so it opens inside Telegram with the
 native theme applied.
+
 
 ## Status & next steps
 
