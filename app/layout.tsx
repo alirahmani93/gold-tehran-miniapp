@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 import Script from "next/script";
 import "./globals.css";
 
@@ -29,7 +30,40 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <header
+          className="sticky top-0 z-40 backdrop-blur"
+          style={{
+            background: "color-mix(in srgb, var(--bg) 85%, transparent)",
+            borderBottom: "1px solid var(--border)",
+          }}
+        >
+          <div className="mx-auto flex max-w-md items-center gap-2 px-4 py-3">
+            <Link
+              href="/"
+              aria-label="خانه"
+              className="flex items-center gap-2"
+              style={{ color: "var(--text)" }}
+            >
+              <span
+                className="flex h-8 w-8 items-center justify-center rounded-lg"
+                style={{
+                  background: "linear-gradient(135deg, #edc04e, #b96a0f)",
+                  color: "#1a1205",
+                  fontWeight: 800,
+                }}
+                aria-hidden
+              >
+                ط
+              </span>
+              <span className="text-sm font-extrabold text-gold-300">
+                طلای تهران
+              </span>
+            </Link>
+          </div>
+        </header>
+        {children}
+      </body>
     </html>
   );
 }
