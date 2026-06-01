@@ -151,6 +151,7 @@ function NumField({
   suffix,
   placeholder,
   info,
+  warn,
 }: {
   label: string;
   value: string;
@@ -158,16 +159,26 @@ function NumField({
   suffix?: string;
   placeholder?: string;
   info?: string;
+  /** Visual warning state — used when an auto-update source failed and the value is now manual. */
+  warn?: boolean;
 }) {
+  const warnFg = "#f87171";
   return (
     <label className="block">
-      <span className="flex items-center gap-1 text-xs" style={{ color: "var(--muted)" }}>
+      <span
+        className="flex items-center gap-1 text-xs"
+        style={{ color: warn ? warnFg : "var(--muted)" }}
+      >
         {label}
+        {warn && <span aria-hidden>⚠️</span>}
         {info && <Info text={info} />}
       </span>
       <div
-        className="mt-1 flex items-center rounded-xl px-3"
-        style={{ background: "var(--card-2)", border: "1px solid var(--border)" }}
+        className="mt-1 flex items-center rounded-xl px-3 transition-colors"
+        style={{
+          background: warn ? "rgba(248,113,113,0.08)" : "var(--card-2)",
+          border: `1px solid ${warn ? warnFg : "var(--border)"}`,
+        }}
       >
         <input
           type="text"
@@ -176,10 +187,13 @@ function NumField({
           placeholder={placeholder}
           onChange={(e) => onChange(cleanNumInput(e.target.value))}
           className="num w-full bg-transparent py-2.5 text-base outline-none"
-          style={{ color: "var(--text)" }}
+          style={{ color: warn ? warnFg : "var(--text)" }}
         />
         {suffix && (
-          <span className="text-xs whitespace-nowrap pr-2" style={{ color: "var(--muted)" }}>
+          <span
+            className="text-xs whitespace-nowrap pr-2"
+            style={{ color: warn ? warnFg : "var(--muted)" }}
+          >
             {suffix}
           </span>
         )}
@@ -238,7 +252,9 @@ const HELP = {
   ounce:
     "قیمت هر اونس (۳۱٫۱۰۳۵ گرم) طلای خالص در بازار جهانی، به دلار. مبنای تمام محاسبات است و با دکمهٔ بروزرسانی از منبع آنلاین گرفته می‌شود.",
   dollar:
-    "قیمت دلار آزاد به تومان. همراه با انس جهانی، دو ورودی اصلی محاسبه هستند. این مقدار را دستی وارد کنید.",
+    "قیمت دلار (USDT) به تومان. به‌صورت خودکار از صرافی Bitpin گرفته می‌شود و در صورت نیاز می‌توانید آن را دستی تغییر دهید.",
+  paxg:
+    "قیمت لحظه‌ای PAXG در صرافی Bitpin (به تومان). PAXG یک توکن پشتوانه‌دار طلا است و قیمت آن تقریباً برابر یک اونس طلاست؛ این مقدار را می‌توانید با انس × دلار مقایسه کنید.",
   mazaneh:
     "مظنه: قیمت یک مثقال (۴٫۶۰۸ گرم) طلای ۱۷ عیار (۷۰۵). فرمول: انس × دلار ÷ ۹٫۵۷۴۲",
   mesghal18: "قیمت یک مثقال (۴٫۶۰۸ گرم) طلای ۱۸ عیار (۷۵۰). فرمول: انس × دلار ÷ ۸٫۹۹۹",
@@ -310,6 +326,14 @@ interface OunceMeta {
   error?: string | null;
 }
 
+interface BitpinMeta {
+  loading: boolean;
+  paxgIrt?: number; // Toman per PAXG (≈ one ounce of gold)
+  paxgUsdt?: number; // USDT per PAXG
+  updatedAt?: string;
+  error?: string | null;
+}
+
 export default function Page() {
   useTelegramTheme();
 
@@ -317,6 +341,7 @@ export default function Page() {
   const [ounce, setOunce] = useState("3300");
   const [dollar, setDollar] = useState("70000");
   const [meta, setMeta] = useState<OunceMeta>({ loading: false });
+  const [bitpin, setBitpin] = useState<BitpinMeta>({ loading: false });
 
   // karat + money tools
   const [karat, setKarat] = useState(750);
@@ -345,10 +370,37 @@ export default function Page() {
     }
   }, []);
 
-  // auto-fetch the world ounce price once on load
-  useEffect(() => {
+  const loadBitpin = useCallback(async () => {
+    setBitpin((m) => ({ ...m, loading: true, error: null }));
+    try {
+      const r = await fetch("/api/bitpin", { cache: "no-store" });
+      const j = await r.json();
+      if (j?.ok && isFinite(Number(j?.usdtIrt?.price))) {
+        setDollar(cleanNumInput(String(Math.round(j.usdtIrt.price))));
+        setBitpin({
+          loading: false,
+          paxgIrt: Number(j.paxgIrt?.price) || undefined,
+          paxgUsdt: Number(j.paxgUsdt?.price) || undefined,
+          updatedAt: j.updatedAt,
+          error: null,
+        });
+      } else {
+        setBitpin((m) => ({ ...m, loading: false, error: j?.error || "خطا در دریافت قیمت" }));
+      }
+    } catch {
+      setBitpin((m) => ({ ...m, loading: false, error: "عدم اتصال به Bitpin" }));
+    }
+  }, []);
+
+  const loadAll = useCallback(() => {
     loadOunce();
-  }, [loadOunce]);
+    loadBitpin();
+  }, [loadOunce, loadBitpin]);
+
+  // auto-fetch the world ounce price + Bitpin (USDT/PAXG) once on load
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
 
   const inputs = useMemo(
     () => ({ ounceUsd: parseNum(ounce), dollarToman: parseNum(dollar) }),
@@ -403,26 +455,43 @@ export default function Page() {
         right={
           <button
             type="button"
-            onClick={loadOunce}
-            disabled={meta.loading}
+            onClick={loadAll}
+            disabled={meta.loading || bitpin.loading}
             className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold"
             style={{
               background: "var(--card-2)",
               color: "var(--text)",
               border: "1px solid var(--border)",
-              opacity: meta.loading ? 0.6 : 1,
+              opacity: meta.loading || bitpin.loading ? 0.6 : 1,
             }}
           >
-            <span style={{ display: "inline-block" }} className={meta.loading ? "animate-spin" : ""}>
+            <span
+              style={{ display: "inline-block" }}
+              className={meta.loading || bitpin.loading ? "animate-spin" : ""}
+            >
               ⟳
             </span>
-            {meta.loading ? "در حال دریافت…" : "بروزرسانی انس"}
+            {meta.loading || bitpin.loading ? "در حال دریافت…" : "بروزرسانی قیمت‌ها"}
           </button>
         }
       >
         <div className="grid grid-cols-2 gap-3">
-          <NumField label="انس جهانی طلا" value={ounce} onChange={setOunce} suffix="دلار" info={HELP.ounce} />
-          <NumField label="قیمت دلار" value={dollar} onChange={setDollar} suffix="تومان" info={HELP.dollar} />
+          <NumField
+            label="انس جهانی طلا"
+            value={ounce}
+            onChange={setOunce}
+            suffix="دلار"
+            info={HELP.ounce}
+            warn={!!meta.error}
+          />
+          <NumField
+            label="قیمت دلار"
+            value={dollar}
+            onChange={setDollar}
+            suffix="تومان"
+            info={HELP.dollar}
+            warn={!!bitpin.error}
+          />
         </div>
         <p className="mt-2 text-[11px]" style={{ color: meta.error ? "#f87171" : "var(--muted)" }}>
           {meta.error
@@ -431,10 +500,24 @@ export default function Page() {
               ? `انس از ${meta.source} دریافت شد${meta.updatedAt ? ` — ${meta.updatedAt}` : ""}`
               : "انس جهانی هنگام باز شدن برنامه به‌صورت خودکار گرفته می‌شود"}
         </p>
+        <p className="mt-1 text-[11px]" style={{ color: bitpin.error ? "#f87171" : "var(--muted)" }}>
+          {bitpin.error
+            ? `⚠️ ${bitpin.error} — قیمت دلار را دستی وارد کنید`
+            : bitpin.updatedAt
+              ? "دلار (USDT) از Bitpin گرفته شد — می‌توانید دستی تغییر دهید"
+              : "دلار از قیمت USDT در Bitpin به‌صورت خودکار گرفته می‌شود"}
+        </p>
       </Card>
 
       {/* DERIVED PRICES */}
       <Card title="قیمت‌های محاسبه‌شده">
+        {bitpin.paxgIrt && (
+          <Row
+            label="PAXG (مرجع طلای آنچین — Bitpin)"
+            value={fmtToman(bitpin.paxgIrt)}
+            info={HELP.paxg}
+          />
+        )}
         <Row label="مظنه (مثقال ۱۷ عیار)" value={fmtToman(d.mazaneh17)} strong info={HELP.mazaneh} />
         <Row label="مثقال ۱۸ عیار (۷۵۰)" value={fmtToman(d.mesghal18)} info={HELP.mesghal18} />
         <Row label="هر گرم طلای ۱۸ عیار" value={fmtToman(d.gram18)} strong info={HELP.gram18} />
