@@ -5,7 +5,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Vazirmatn", "system-ui", "sans-serif"],
+        sans: ["Vazir", "system-ui", "sans-serif"],
       },
       colors: {
         gold: {

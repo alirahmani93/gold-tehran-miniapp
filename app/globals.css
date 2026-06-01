@@ -1,4 +1,4 @@
-@import url("https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css");
+@import url("https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css");
 
 @tailwind base;
 @tailwind components;
@@ -18,7 +18,7 @@ html,
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Vazirmatn", system-ui, sans-serif;
+  font-family: "Vazir", system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
 }
 
