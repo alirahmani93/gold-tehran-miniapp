@@ -22,6 +22,13 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Keyboard focus must stay visible even though tap highlight is disabled. */
+:focus-visible {
+  outline: 2px solid #edc04e;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
 body {
   margin: 0;
   min-height: 100dvh;

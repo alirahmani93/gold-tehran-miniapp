@@ -139,7 +139,7 @@ function Cta({
 
 export default function Landing() {
   return (
-    <div dir="rtl" className="relative min-h-dvh overflow-hidden text-slate-100">
+    <div id="main" dir="rtl" className="relative min-h-dvh overflow-hidden text-slate-100">
       {/* gold radial mesh background */}
       <div
         aria-hidden

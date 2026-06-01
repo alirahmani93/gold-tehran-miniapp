@@ -71,8 +71,9 @@ function Info({ text }: { text: string }) {
       <button
         type="button"
         aria-label="راهنما"
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold leading-none"
+        className="relative flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold leading-none before:absolute before:-inset-[14px] before:content-['']"
         style={{
           background: open ? "var(--gold-500,#d68a14)" : "var(--card-2)",
           color: open ? "#1a1205" : "var(--muted)",
@@ -91,11 +92,11 @@ function Info({ text }: { text: string }) {
             style={{ background: "transparent", cursor: "default" }}
           />
           <div
-            role="dialog"
-            className="absolute z-50 w-56 rounded-xl p-3 text-[11px] leading-relaxed shadow-xl"
+            role="tooltip"
+            className="absolute z-50 w-56 max-w-[calc(100vw-2rem)] rounded-xl p-3 text-[11px] leading-relaxed shadow-xl"
             style={{
               top: "150%",
-              right: 0,
+              insetInlineEnd: 0,
               background: "var(--card-2)",
               color: "var(--text)",
               border: "1px solid var(--border)",
@@ -115,15 +116,18 @@ function Card({
   subtitle,
   right,
   children,
+  className = "",
 }: {
   title?: string;
   subtitle?: string;
   right?: React.ReactNode;
   children: React.ReactNode;
+  /** Extra classes — used to control grid spans on desktop. */
+  className?: string;
 }) {
   return (
     <section
-      className="rounded-2xl p-4 mb-4"
+      className={`rounded-2xl p-4 mb-4 break-inside-avoid ${className}`}
       style={{ background: "var(--card)", border: "1px solid var(--border)" }}
     >
       {title && (
@@ -191,7 +195,7 @@ function NumField({
         />
         {suffix && (
           <span
-            className="text-xs whitespace-nowrap pr-2"
+            className="text-xs whitespace-nowrap ps-2"
             style={{ color: warn ? warnFg : "var(--muted)" }}
           >
             {suffix}
@@ -224,7 +228,7 @@ function Row({
       </span>
       <span className={`num text-sm ${strong ? "font-bold text-gold-300" : ""}`}>
         {value}
-        <span className="text-xs mr-1" style={{ color: "var(--muted)" }}>
+        <span className="text-xs ms-1" style={{ color: "var(--muted)" }}>
           {" "}
           تومان
         </span>
@@ -501,15 +505,17 @@ export default function Page() {
   const hasAnyMarket = !!(market.full || market.half || market.quarter);
 
   return (
-    <main className="mx-auto max-w-md px-4 py-5">
-      <header className="mb-5 text-center">
-        <h1 className="text-xl font-extrabold text-gold-300">محاسبه قیمت طلا و سکه</h1>
-        <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
+    <main id="main" className="mx-auto max-w-md md:max-w-4xl lg:max-w-6xl px-4 md:px-6 py-5 md:py-8">
+      <header className="mb-5 md:mb-7 text-center">
+        <h1 className="text-xl md:text-2xl font-extrabold text-gold-300">
+          محاسبه قیمت طلا و سکه
+        </h1>
+        <p className="text-xs md:text-sm mt-1" style={{ color: "var(--muted)" }}>
           بر اساس انس جهانی و دلار آزاد — تهران
         </p>
       </header>
 
-      {/* INPUTS */}
+      {/* INPUTS — full-width block */}
       <Card
         title="ورودی‌ها"
         subtitle="دو عدد پایه؛ باقی همه چیز از این‌ها محاسبه می‌شود"
@@ -518,7 +524,7 @@ export default function Page() {
             type="button"
             onClick={loadAll}
             disabled={meta.loading || bitpin.loading}
-            className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold"
+            className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold min-h-[44px] md:min-h-[36px]"
             style={{
               background: "var(--card-2)",
               color: "var(--text)",
@@ -536,7 +542,7 @@ export default function Page() {
           </button>
         }
       >
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:max-w-xl">
           <NumField
             label="انس جهانی طلا"
             value={ounce}
@@ -569,6 +575,9 @@ export default function Page() {
               : "دلار از قیمت USDT در Bitpin به‌صورت خودکار گرفته می‌شود"}
         </p>
       </Card>
+
+      {/* MIDDLE CARDS — masonry-like flow so unequal heights don't leave gaps */}
+      <div className="md:columns-2 lg:columns-3 md:gap-x-4">
 
       {/* DERIVED PRICES */}
       <Card title="قیمت‌های محاسبه‌شده">
@@ -621,7 +630,7 @@ export default function Page() {
             <button
               key={k.v}
               onClick={() => setKarat(k.v)}
-              className="rounded-lg px-3 py-1.5 text-xs font-bold transition"
+              className="rounded-lg px-3 py-2 text-xs font-bold transition min-h-[44px] md:min-h-[36px]"
               style={{
                 background: karat === k.v ? "var(--gold-500, #d68a14)" : "var(--card-2)",
                 color: karat === k.v ? "#1a1205" : "var(--text)",
@@ -671,12 +680,14 @@ export default function Page() {
         </div>
       </Card>
 
-      {/* BUBBLE / ARBITRAGE */}
+      </div>
+
+      {/* BUBBLE / ARBITRAGE — full-width block (3 coin inputs are roomier with full row) */}
       <Card
         title="حباب و فرصت سود"
         subtitle="قیمت بازار سکه را وارد کن تا حباب (اختلاف با ارزش ذاتی) محاسبه شود"
       >
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <BubbleInput
             label="قیمت بازار سکه تمام"
             value={mFull}
@@ -753,7 +764,7 @@ export default function Page() {
         )}
       </Card>
 
-      {/* COIN/GOLD RATIO — نسبت سکه به طلا */}
+      {/* COIN/GOLD RATIO — نسبت سکه به طلا — full-width block */}
       <Card
         title="نسبت سکه به طلا"
         subtitle="روش رایج بازاری‌ها برای سنجش حباب سکهٔ امامی"
@@ -813,7 +824,7 @@ export default function Page() {
         )}
       </Card>
 
-      <p className="text-center text-xs leading-relaxed mt-2" style={{ color: "var(--muted)" }}>
+      <p className="text-center text-xs leading-relaxed mt-2 md:mt-6 md:max-w-3xl md:mx-auto" style={{ color: "var(--muted)" }}>
         ارزش ذاتی = ارزش ذوب طلای داخل سکه/آبشده از روی انس و دلار. حباب = قیمت بازار منهای ارزش ذاتی.
         انس به‌صورت خودکار از اینترنت گرفته می‌شود؛ قیمت دلار و قیمت بازار سکه را دستی وارد کنید.
         اعداد آستانهٔ نسبت و حباب تقریبی و تجربی‌اند.
@@ -885,16 +896,6 @@ function BubbleInput({
   return (
     <div>
       <div className="flex items-end gap-2">
-        <div className="flex-1 min-w-0">
-          <NumField
-            label={label}
-            value={value}
-            onChange={onChange}
-            suffix="تومان"
-            placeholder="قیمت بازار"
-            info={info}
-          />
-        </div>
         <div className="pb-1">
           {showVerdict ? (
             <VerdictGauge b={b} />
@@ -912,6 +913,16 @@ function BubbleInput({
               ذاتی
             </span>
           )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <NumField
+            label={label}
+            value={value}
+            onChange={onChange}
+            suffix="تومان"
+            placeholder="قیمت بازار"
+            info={info}
+          />
         </div>
       </div>
       {b && (

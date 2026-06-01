@@ -13,8 +13,6 @@ export const viewport: Viewport = {
   themeColor: "#0f1115",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default function RootLayout({
@@ -31,6 +29,16 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:start-2 focus:z-[100] focus:rounded-lg focus:px-3 focus:py-2 focus:text-sm focus:font-bold"
+          style={{
+            background: "var(--gold-500,#d68a14)",
+            color: "#1a1205",
+          }}
+        >
+          پرش به محتوای اصلی
+        </a>
         <header
           className="sticky top-0 z-40 backdrop-blur"
           style={{
@@ -38,7 +46,7 @@ export default function RootLayout({
             borderBottom: "1px solid var(--border)",
           }}
         >
-          <div className="mx-auto flex max-w-md items-center gap-2 px-4 py-3">
+          <div className="mx-auto flex max-w-md md:max-w-4xl lg:max-w-6xl items-center gap-2 px-4 md:px-6 py-3">
             <Link
               href="/"
               aria-label="خانه"
