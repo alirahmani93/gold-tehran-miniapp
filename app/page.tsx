@@ -1,78 +1,108 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import {
-  ArrowIcon,
-  BoltIcon,
-  BubbleIcon,
-  ChartIcon,
-  CoinIcon,
-  GaugeIcon,
-  GlobeIcon,
-  RefreshIcon,
-  ScaleIcon,
-  ShieldIcon,
-} from "./icons";
 
 export const metadata: Metadata = {
-  title: "محاسبه‌گر طلا و سکه تهران | حباب، مظنه و نسبت سکه به طلا",
+  title: "طلاسنج تهران | حباب، مظنه و نسبت سکه به طلا",
   description:
-    "محاسبهٔ لحظه‌ای قیمت طلا، سکه، مظنه و طلای آبشده بر اساس انس جهانی و دلار آزاد — به‌همراه تشخیص حباب و فرصت سود. مینی‌اپ تلگرام.",
+    "محاسبهٔ لحظه‌ای قیمت طلا، سکه، مظنه و حباب بازار بر اساس انس جهانی و دلار آزاد — به‌همراه نرخ ارز و محاسبهٔ تورم. مینی‌اپ تلگرام.",
   openGraph: {
-    title: "محاسبه‌گر طلا و سکه تهران",
-    description: "حباب، مظنه، نسبت سکه به طلا و فرصت سود — لحظه‌ای.",
+    title: "طلاسنج تهران",
+    description: "حباب، مظنه، نسبت سکه به طلا، نرخ ارز و تورم — لحظه‌ای.",
     type: "website",
   },
 };
 
 const APP_URL = "/calculator";
 
-/* ---------- content (honest; no fabricated metrics/testimonials) ---------- */
 const FEATURES = [
   {
-    Icon: GlobeIcon,
     title: "انس جهانی، زنده",
     body: "قیمت انس از منبع آنلاین به‌صورت خودکار گرفته می‌شود؛ با یک دکمه بروزرسانی کن.",
+    icon: (
+      <path d="M12 3v18M5 8l7-5 7 5M5 8v8l7 5 7-5V8" />
+    ),
   },
   {
-    Icon: BubbleIcon,
     title: "تشخیص حباب",
-    body: "حباب سکه و طلای آبشده را نسبت به ارزش ذاتی (ذوب) لحظه‌ای محاسبه می‌کند.",
+    body: "حباب سکه و طلای آبشده را نسبت به ارزش ذاتی (ذوب) لحظه‌ای و با سیگنال رنگی محاسبه می‌کند.",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v10M9 9.5h4.5a1.8 1.8 0 010 3.6H9.5" />
+      </>
+    ),
   },
   {
-    Icon: GaugeIcon,
     title: "نسبت سکه به طلا",
     body: "نسبت رایج بازاری‌ها با بازه‌های تصمیم‌گیری: کِی بخر، کِی بفروش.",
+    icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
   },
   {
-    Icon: CoinIcon,
-    title: "ارزش ذاتی سکه‌ها",
-    body: "سکه تمام، نیم‌سکه و ربع‌سکه — ارزش واقعی طلای داخل هرکدام.",
+    title: "نرخ ارز و جفت‌ارزها",
+    body: "دلار، یورو، پوند، درهم امارات و ریال عمان — با ارزش هر واحد به تومان و مبدل ارز.",
+    icon: (
+      <>
+        <rect x="2" y="6" width="20" height="12" rx="2" />
+        <circle cx="12" cy="12" r="2.5" />
+      </>
+    ),
   },
   {
-    Icon: ScaleIcon,
     title: "تبدیل پول ↔ وزن",
     body: "با هر مبلغ چه وزنی طلا می‌خری، و هر وزن طلا چقدر می‌ارزد — با هر عیاری.",
+    icon: <path d="M7 10h12l-3-3M17 14H5l3 3" />,
   },
   {
-    Icon: ChartIcon,
-    title: "فرصت آربیتراژ",
-    body: "مقایسهٔ حباب بین سکه‌ها و طلای آبشده برای یافتن بهترین سمت معامله.",
+    title: "محاسبهٔ تورم",
+    body: "ببین تورم چقدر از ارزش پول نقدت می‌خورد و چرا طلا سپر تورم است.",
+    icon: (
+      <path d="M12 3s4 3.5 4 8a4 4 0 11-8 0c0-1.5.5-2.5 1-3 0 1.5 1 2 1.5 2C10 8 12 6 12 3z" />
+    ),
+  },
+];
+
+const TOOLS = [
+  {
+    title: "طلا و سکه",
+    body: "مظنه، ذاتی، حباب، نسبت و آربیتراژ.",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v10M9 9.5h4.5a1.8 1.8 0 010 3.6H9.5" />
+      </>
+    ),
+  },
+  {
+    title: "ارز",
+    body: "EUR/USD، AED/USD، OMR/USD و مبدل ارز.",
+    icon: (
+      <>
+        <rect x="2" y="6" width="20" height="12" rx="2" />
+        <circle cx="12" cy="12" r="2.5" />
+      </>
+    ),
+  },
+  {
+    title: "تورم",
+    body: "افت قدرت خرید پول نقد در طول زمان.",
+    icon: (
+      <path d="M12 3s4 3.5 4 8a4 4 0 11-8 0c0-1.5.5-2.5 1-3 0 1.5 1 2 1.5 2C10 8 12 6 12 3z" />
+    ),
   },
 ];
 
 const STEPS = [
   {
-    n: "۱",
+    n: "1",
     title: "دو عدد را وارد کن",
     body: "انس جهانی (خودکار) و قیمت دلار آزاد. مبنای همهٔ محاسبات همین دو است.",
   },
   {
-    n: "۲",
+    n: "2",
     title: "قیمت بازار را بده",
     body: "قیمت بازار سکه یا طلای آبشده را وارد کن تا حباب و نسبت‌ها حساب شود.",
   },
   {
-    n: "۳",
+    n: "3",
     title: "تصمیم بگیر",
     body: "بازه‌های رنگی نشان می‌دهند حباب کم است یا زیاد، و کدام سمت بازار بهتر است.",
   },
@@ -82,10 +112,11 @@ const FAQ = [
   {
     q: "قیمت‌ها از کجا می‌آید؟",
     a: "انس جهانی به‌صورت خودکار از یک منبع آنلاین گرفته می‌شود. قیمت دلار آزاد و قیمت بازار سکه را خودت وارد می‌کنی تا محاسبه دقیق و مطابق بازار لحظه‌ای تو باشد.",
+    open: true,
   },
   {
     q: "حباب دقیقاً یعنی چه؟",
-    a: "حباب = قیمت بازار منهای ارزش ذاتی (ارزش ذوب طلای داخل سکه). حباب مثبت یعنی سکه گران‌تر از طلای داخلش است.",
+    a: "حباب = قیمت بازار منهای ارزش ذاتی (ارزش ذوب طلای داخل سکه). حباب مثبت یعنی سکه گران‌تر از طلای داخلش معامله می‌شود.",
   },
   {
     q: "اعداد آستانهٔ نسبت و حباب چقدر دقیق‌اند؟",
@@ -97,242 +128,261 @@ const FAQ = [
   },
 ];
 
-function Glass({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function FeatIcon({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      className={`rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl ${className}`}
-      style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.45)" }}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
       {children}
-    </div>
+    </svg>
   );
 }
 
-function Cta({
-  children,
-  variant = "primary",
-}: {
-  children: React.ReactNode;
-  variant?: "primary" | "ghost";
-}) {
-  const primary =
-    "bg-gradient-to-l from-gold-500 to-gold-300 text-[#1a1205] shadow-[0_8px_24px_rgba(231,168,36,0.35)] hover:brightness-105";
-  const ghost =
-    "border border-white/15 text-gold-100 hover:bg-white/[0.06] backdrop-blur";
-  return (
-    <Link
-      href={APP_URL}
-      className={`inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl px-6 text-sm font-bold outline-none transition focus-visible:ring-2 focus-visible:ring-gold-300/70 ${
-        variant === "primary" ? primary : ghost
-      }`}
-    >
-      {children}
-    </Link>
-  );
-}
+const Chevron = () => (
+  <svg
+    className="chev"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+  >
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+);
+
+const Check = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+    <path d="M5 12l5 5 9-9" />
+  </svg>
+);
 
 export default function Landing() {
   return (
-    <div id="main" dir="rtl" className="relative min-h-dvh overflow-hidden text-slate-100">
-      {/* gold radial mesh background */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(60% 50% at 80% 0%, rgba(231,168,36,0.18), transparent 60%), radial-gradient(50% 40% at 10% 10%, rgba(123,97,255,0.10), transparent 55%), radial-gradient(80% 60% at 50% 110%, rgba(185,106,15,0.16), transparent 60%), #0b0d12",
-        }}
-      />
-
-      {/* NAV */}
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-gold-300 to-gold-600 text-[#1a1205]">
-            <CoinIcon width={20} height={20} />
-          </span>
-          <span className="text-sm font-extrabold text-gold-100">طلاسنج تهران</span>
-        </div>
-        <div className="hidden sm:block">
-          <Cta variant="ghost">
+    <div id="main" className="lp-root">
+      <nav className="lp-nav">
+        <div className="lp-wrap">
+          <a className="lp-logo" href="/">
+            <span className="lp-mark">ط</span>
+            <span>طلاسنج تهران</span>
+          </a>
+          <div className="lp-sp" />
+          <a className="lp-btn lp-btn-ghost" href="#features">
+            امکانات
+          </a>
+          <a className="lp-btn lp-btn-gold" href={APP_URL}>
             باز کردن محاسبه‌گر
-            <ArrowIcon width={16} height={16} />
-          </Cta>
+          </a>
+        </div>
+      </nav>
+
+      <header className="lp-hero">
+        <div className="lp-wrap lp-hero-grid">
+          <div className="lp-hero-copy">
+            <div className="lp-eyebrow">
+              <span className="lp-dot" />
+              محاسبهٔ لحظه‌ای بازار طلا، ارز و تورم
+            </div>
+            <h1>
+              قیمت واقعی طلا و سکه را{" "}
+              <span className="lp-gold-text">لحظه‌ای</span> بفهم
+            </h1>
+            <p className="lp-lead">
+              مظنه، ارزش ذاتی سکه، طلای آبشده و حباب بازار — همه از روی انس
+              جهانی و دلار آزاد. ببین کجا حباب هست و کدام سمت معامله به سودت
+              است.
+            </p>
+            <div className="lp-cta-row">
+              <a className="lp-btn lp-btn-gold lp-btn-lg" href={APP_URL}>
+                باز کردن محاسبه‌گر
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                >
+                  <path d="M14 5l-7 7 7 7" />
+                </svg>
+              </a>
+              <a className="lp-btn lp-btn-ghost lp-btn-lg" href="#features">
+                امکانات را ببین
+              </a>
+            </div>
+            <div className="lp-trust">
+              <span>
+                <Check />
+                رایگان
+              </span>
+              <span>
+                <Check />
+                داخل تلگرام باز می‌شود
+              </span>
+              <span>
+                <Check />
+                بدون ثبت‌نام
+              </span>
+            </div>
+          </div>
+
+          <div className="lp-phone">
+            <div className="lp-ph-top">
+              <span className="lp-ph-m">ط</span>
+              <b>طلاسنج تهران</b>
+              <span className="lp-ph-live">
+                <i />
+                انس زنده · <span className="num">2,400</span>$
+              </span>
+            </div>
+            <div className="lp-vcard">
+              <div className="lp-vt">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="15"
+                  height="15"
+                  fill="none"
+                  stroke="#f0d98a"
+                  strokeWidth="1.8"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v10M9 9.5h4.5a1.8 1.8 0 010 3.6H9.5" />
+                </svg>
+                حباب سکه تمام<span className="lp-pill">بازار متعادل</span>
+              </div>
+              <div className="lp-big">
+                <span className="num">+9.12</span>
+                <small>
+                  {" "}
+                  میلیون تومان · <span className="num">+16.77%</span>
+                </small>
+              </div>
+              <div className="lp-msg">
+                قیمت بازار <span className="num">63,500,000</span> در برابر ارزش
+                ذاتی <span className="num">54,382,124</span> تومان. نسبت سکه به
+                طلا <span className="num">11.40</span>.
+              </div>
+              <div className="lp-gauge">
+                <i />
+              </div>
+            </div>
+            <div className="lp-ph-list">
+              <div className="lp-ph-row">
+                <span className="l">مظنه (مثقال ۱۷)</span>
+                <span className="v num">24,127,342</span>
+              </div>
+              <div className="lp-ph-row">
+                <span className="l">هر گرم طلای ۱۸</span>
+                <span className="v num">5,569,848</span>
+              </div>
+              <div className="lp-ph-row">
+                <span className="l">سکه تمام (ذاتی)</span>
+                <span className="v num">54,382,124</span>
+              </div>
+              <div className="lp-ph-row">
+                <span className="l">هر گرم آبشده</span>
+                <span className="v num">5,235,657</span>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 pb-8 pt-10 md:grid-cols-2 md:pt-16">
-        <div className="lp-rise" style={{ animationDelay: "60ms" }}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-gold-300/30 bg-gold-300/10 px-3 py-1 text-xs font-bold text-gold-200">
-            <BoltIcon width={14} height={14} />
-            محاسبهٔ لحظه‌ای بازار طلا
-          </span>
-          <h1 className="mt-5 text-4xl font-extrabold leading-tight md:text-5xl">
-            قیمت واقعی طلا و سکه را{" "}
-            <span className="lp-shimmer">لحظه‌ای</span> بفهم
-          </h1>
-          <p className="mt-4 max-w-md text-base leading-relaxed text-slate-300">
-            مظنه، ارزش ذاتی سکه، طلای آبشده و حباب بازار — همه از روی انس جهانی و
-            دلار آزاد. ببین کجا حباب هست و کدام سمت معامله به سودت است.
-          </p>
-          <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Cta variant="primary">
-              باز کردن محاسبه‌گر
-              <ArrowIcon width={18} height={18} />
-            </Cta>
+      <section id="features" className="lp-section">
+        <div className="lp-wrap">
+          <div className="lp-sec-head">
+            <div className="lp-kicker">امکانات</div>
+            <h2>هر چیزی که برای تصمیم لازم داری</h2>
+            <p>از قیمت‌گذاری پایه تا تشخیص حباب و آربیتراژ — یک‌جا و فارسی.</p>
+          </div>
+          <div className="lp-feat">
+            {FEATURES.map((f) => (
+              <div className="lp-fcard" key={f.title}>
+                <div className="lp-fic">
+                  <FeatIcon>{f.icon}</FeatIcon>
+                </div>
+                <h3>{f.title}</h3>
+                <p>{f.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section">
+        <div className="lp-wrap">
+          <div className="lp-sec-head">
+            <div className="lp-kicker">سه ابزار، یک‌جا</div>
+            <h2>بین محاسبه‌گرها راحت جابه‌جا شو</h2>
+            <p>یک نوار بالای صفحه؛ با یک لمس از طلا به ارز یا تورم سوییچ کن.</p>
+          </div>
+          <div className="lp-tools">
+            {TOOLS.map((t) => (
+              <div className="lp-tool" key={t.title}>
+                <div className="lp-tic">
+                  <FeatIcon>{t.icon}</FeatIcon>
+                </div>
+                <div>
+                  <b>{t.title}</b>
+                  <span>{t.body}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section">
+        <div className="lp-wrap">
+          <div className="lp-sec-head">
+            <div className="lp-kicker">در سه قدم</div>
+            <h2>از دو عدد تا تصمیم</h2>
+          </div>
+          <div className="lp-steps">
+            {STEPS.map((s) => (
+              <div className="lp-step" key={s.n}>
+                <div className="lp-step-n num">{s.n}</div>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section">
+        <div className="lp-wrap">
+          <div className="lp-sec-head">
+            <div className="lp-kicker">سؤال‌های متداول</div>
+            <h2>هرچه باید بدانی</h2>
+          </div>
+          <div className="lp-faq">
+            {FAQ.map((f) => (
+              <details className="lp-qa" key={f.q} open={f.open}>
+                <summary>
+                  {f.q}
+                  <Chevron />
+                </summary>
+                <div className="lp-qa-a">{f.a}</div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="lp-section">
+        <div className="lp-wrap">
+          <div className="lp-final">
+            <h2>همین حالا حباب بازار را بسنج</h2>
+            <p>دو عدد وارد کن و در چند ثانیه ببین طلا یا سکه به‌صرفه است یا نه.</p>
             <a
-              href="#features"
-              className="inline-flex min-h-[48px] items-center rounded-2xl px-4 text-sm font-medium text-slate-300 outline-none transition hover:text-gold-100 focus-visible:ring-2 focus-visible:ring-gold-300/70"
+              className="lp-btn lp-btn-gold lp-btn-xl"
+              href={APP_URL}
             >
-              امکانات را ببین
+              باز کردن محاسبه‌گر
             </a>
           </div>
-          <p className="mt-4 flex items-center gap-1.5 text-xs text-slate-400">
-            <ShieldIcon width={14} height={14} />
-            رایگان · داخل تلگرام باز می‌شود · بدون ثبت‌نام
-          </p>
-        </div>
-
-        {/* hero visual — honest mock of the calculator output */}
-        <div className="lp-rise" style={{ animationDelay: "180ms" }}>
-          <div className="lp-float">
-            <Glass className="p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-xs text-slate-400">قیمت‌های محاسبه‌شده</span>
-                <span className="flex items-center gap-1 rounded-lg bg-white/5 px-2 py-1 text-[11px] text-gold-200">
-                  <RefreshIcon width={12} height={12} />
-                  انس زنده
-                </span>
-              </div>
-              <PreviewRow label="مظنه (مثقال ۱۷)" value="۲۴٬۱۲۷٬۳۴۲" strong />
-              <PreviewRow label="هر گرم طلای ۱۸" value="۵٬۵۷۰٬۲۷۹" />
-              <PreviewRow label="سکه تمام (ذاتی)" value="۵۴٬۳۶۲٬۲۷۹" strong />
-              <PreviewRow label="هر گرم آبشده" value="۵٬۲۳۸٬۱۰۰" />
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-gold-300/20 bg-gold-300/[0.07] p-3">
-                <span className="text-xs text-slate-300">نسبت سکه به طلا</span>
-                <span className="num text-2xl font-extrabold text-gold-300">
-                  ۱۱٫۴۷
-                </span>
-              </div>
-              <p className="mt-2 text-center text-[11px] text-slate-500">
-                نمونهٔ خروجی — اعداد واقعی به ورودی تو بستگی دارد
-              </p>
-            </Glass>
-          </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section id="features" className="mx-auto max-w-6xl px-5 py-14 md:py-20">
-        <div className="mb-10 text-center">
-          <h2 className="text-2xl font-extrabold md:text-3xl">
-            هر چیزی که برای تصمیم لازم داری
-          </h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm text-slate-400">
-            از قیمت‌گذاری پایه تا تشخیص حباب و آربیتراژ — یک‌جا و فارسی.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map(({ Icon, title, body }) => (
-            <Glass key={title} className="p-5 transition hover:border-gold-300/25">
-              <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-gold-300/20 to-gold-600/10 text-gold-300">
-                <Icon width={22} height={22} />
-              </span>
-              <h3 className="text-base font-bold text-slate-100">{title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{body}</p>
-            </Glass>
-          ))}
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="mx-auto max-w-6xl px-5 py-6 md:py-12">
-        <div className="mb-10 text-center">
-          <h2 className="text-2xl font-extrabold md:text-3xl">در سه قدم</h2>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          {STEPS.map((s) => (
-            <Glass key={s.n} className="relative p-6">
-              <span className="num absolute left-5 top-5 text-5xl font-black text-white/[0.06]">
-                {s.n}
-              </span>
-              <h3 className="relative text-base font-bold text-gold-200">{s.title}</h3>
-              <p className="relative mt-2 text-sm leading-relaxed text-slate-400">
-                {s.body}
-              </p>
-            </Glass>
-          ))}
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="mx-auto max-w-3xl px-5 py-14 md:py-20">
-        <div className="mb-8 text-center">
-          <h2 className="text-2xl font-extrabold md:text-3xl">سؤال‌های متداول</h2>
-        </div>
-        <div className="space-y-3">
-          {FAQ.map((f) => (
-            <details
-              key={f.q}
-              className="group rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur open:border-gold-300/20"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-bold text-slate-100">
-                {f.q}
-                <span className="text-gold-300 transition group-open:rotate-45">+</span>
-              </summary>
-              <p className="mt-3 text-sm leading-relaxed text-slate-400">{f.a}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      {/* FOOTER CTA */}
-      <section className="mx-auto max-w-6xl px-5 pb-16">
-        <Glass className="overflow-hidden p-8 text-center md:p-12">
-          <h2 className="text-2xl font-extrabold md:text-3xl">
-            همین حالا حباب بازار را بسنج
-          </h2>
-          <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
-            دو عدد وارد کن و در چند ثانیه ببین طلا یا سکه به‌صرفه است یا نه.
-          </p>
-          <div className="mt-7 flex justify-center">
-            <Cta variant="primary">
-              باز کردن محاسبه‌گر
-              <ArrowIcon width={18} height={18} />
-            </Cta>
-          </div>
-        </Glass>
-      </section>
-
-      <footer className="border-t border-white/5 py-6 text-center text-xs text-slate-500">
+      <footer className="lp-footer">
         طلاسنج تهران — ابزار راهنما، نه توصیهٔ سرمایه‌گذاری.
       </footer>
-    </div>
-  );
-}
-
-function PreviewRow({
-  label,
-  value,
-  strong,
-}: {
-  label: string;
-  value: string;
-  strong?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between border-b border-white/5 py-2 last:border-0">
-      <span className="text-xs text-slate-400">{label}</span>
-      <span className={`num text-sm ${strong ? "font-bold text-gold-300" : "text-slate-200"}`}>
-        {value}
-        <span className="mr-1 text-[10px] text-slate-500"> تومان</span>
-      </span>
     </div>
   );
 }
