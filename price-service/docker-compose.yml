@@ -1,0 +1,29 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: price-service-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6390:6379"        # exposed to host so dev scripts (poll:once, inspect.ts) can reach it
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: price-service-app
+    depends_on:
+      - redis
+    env_file: .env          # loads everything from .env, then we override host-specific bits below
+    environment:
+      HOST: 0.0.0.0
+      REDIS_URL: redis://redis:6379/0    # in-network hostname; bypasses the :6390 host mapping
+      SQLITE_PATH: /app/data/prices.db
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data:/app/data    # SQLite db lives on the host so it survives `docker compose down`
+    restart: unless-stopped
+
+volumes:
+  redis-data:
