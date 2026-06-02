@@ -2,10 +2,13 @@
 
 Price aggregation microservice for gold, coin, crypto, and FX.
 
-**Current coverage (one source — Bitpin):** BTC, ETH, USDT, PAXG (both IRT and USDT quotes).
+**Current coverage:**
+- **Bitpin** — BTC, ETH, USDT, PAXG (both IRT and USDT quotes)
+- **goldspot** — XAU (world gold spot, USD/oz; fallback chain across gold-api.com → goldprice.org → metals.live)
+
 **Stubbed (no source yet):** USD, XAU_18K, XAU_24K, MESGHAL, GRAM, BAHAR_FULL/HALF/QUARTER.
 A future TGJU/Milli collector will fill those in. The API returns `404 no recent price`
-for an asset that has no live source rather than fabricating from PAXG.
+for an asset that has no live source rather than fabricating from PAXG/XAU.
 
 ## What it does
 
@@ -16,11 +19,12 @@ for an asset that has no live source rather than fabricating from PAXG.
 - Computes a canonical cross-source price per asset — **median** and **trimmed mean**
 - Serves REST endpoints with `x-api-token` auth and per-token rate limiting
 
-> **Honest caveats.** Today only Bitpin is wired, so "cross-source" canonical = Bitpin's
-> own number. Code is structured so adding a second source is just a new file under
-> `src/sources/` plus an entry in the registry — no core changes. VWAP weights use the
-> source's reported 24h base-unit volume; this is an approximation suitable for monitoring,
-> not for trading. We assume `1 USDT ≈ 1 USD` for normalization (industry default).
+> **Honest caveats.** Each asset has at most one source today (Bitpin for crypto/PAXG,
+> goldspot for XAU), so "cross-source" canonical median == that one source's number.
+> Adding another source is just a new file under `src/sources/` plus an entry in the
+> registry — no core changes. VWAP weights use the source's reported 24h base-unit
+> volume; this is an approximation suitable for monitoring, not for trading. We assume
+> `1 USDT ≈ 1 USD` for normalization (industry default).
 
 ## Stack
 
@@ -33,14 +37,51 @@ for an asset that has no live source rather than fabricating from PAXG.
 
 ## Setup
 
+Two ways to run: **all-in-Docker** (preferred for servers / VPS) or **local dev with
+hot-reload** (Docker just for Redis).
+
+### A) All-in-Docker (app + redis)
+
 ```bash
 cd price-service
 cp .env.example .env
-docker compose up -d              # local Redis on 127.0.0.1:6390
+docker compose up -d --build      # builds the app image, starts redis + app
+docker compose logs -f app        # tail server logs
+```
+
+Server listens on `:4000`. Migrations run automatically at startup. SQLite lives at
+`./data/prices.db` (host bind-mount, survives `docker compose down`).
+
+Create an API token from inside the container (dev deps are pruned, so use the
+`:prod` script which calls compiled JS):
+
+```bash
+docker exec -it price-service-app npm run token:create:prod -- myapp 120
+# or, equivalently
+docker exec -it price-service-app node dist/scripts/create-token.js myapp 120
+```
+
+Other one-shots inside the container:
+
+```bash
+docker exec -it price-service-app npm run poll:once:prod
+docker exec -it price-service-app npm run inspect:prod
+docker exec -it price-service-app npm run migrate:prod   # rarely needed; server auto-runs migrations
+```
+
+> If your network can't reach Docker Hub (the build pulls `docker.arvancloud.ir/node:20-alpine`
+> as a mirror), change the `FROM` line in `Dockerfile` back to `node:20-alpine`.
+
+### B) Local dev (hot-reload) + dockerized Redis
+
+```bash
+cd price-service
+cp .env.example .env
+docker compose up -d redis        # just Redis on 127.0.0.1:6390
 npm install
 npm run migrate                   # creates data/prices.db
 npm run token:create -- myapp 120 # prints { name, token, rate_limit_per_min }
-npm run dev
+npm run dev                       # tsx watch
 ```
 
 ## Smoke test (no server needed)
@@ -88,6 +129,8 @@ curl -H "x-api-token: $TOKEN" "localhost:4000/v1/sources/bitpin/daily?date=2026-
 | `HOURLY_RETENTION_DAYS` | `120` | |
 | `DAILY_RETENTION_DAYS` | `3650` | |
 | `BITPIN_BASE_URL` | `https://api.bitpin.org` | confirmed via live probe |
+| `BITPIN_TIMEOUT_MS` | `10000` | per-request timeout |
+| `FX_FALLBACK_MAX_AGE_SEC` | `3600` | how long to trust the cached USDT/IRT rate when not in this batch |
 | `BOOTSTRAP_TOKENS` | empty | `name:token:rate,name2:token2:rate2` for one-shot bootstrap |
 
 ## Data model
@@ -108,14 +151,16 @@ curl -H "x-api-token: $TOKEN" "localhost:4000/v1/sources/bitpin/daily?date=2026-
 
 1. `src/sources/foo.ts` — implement `Source.fetch(): Promise<RawQuote[]>`
 2. Map foo's market keys → canonical asset codes in `src/sources/registry.ts`
-3. Register the instance in `src/collector/poller.ts` (`SOURCES` array)
-4. Update each asset's `bitpinCoverage`/source list in the registry
+3. Add the source name to `SOURCES` and append it to the `sources: []` array on each
+   asset it covers (`AssetMeta.sources` in the registry — `SourceName[]`)
+4. Register the instance in `src/collector/poller.ts` (`SOURCES: Source[]` array)
 
 No DB migration needed.
 
 ## Known limitations (today, by design)
 
-- Single source → canonical median == that source's value
-- Bitpin doesn't carry physical gold or Bahar Azadi coins; those return 404 until source #2 lands
+- Each asset has at most one source → canonical median == that one source's value
+- No source for physical gold (XAU_18K, GRAM, MESGHAL) or Bahar Azadi coins yet; those return 404 until a TGJU/Milli collector lands
 - `price_usd` for USDT-quoted markets assumes `1 USDT = 1 USD` (~±1% during de-pegs)
 - VWAP weights use 24h volume snapshots; a true tick-level VWAP would need a higher-frequency feed
+- `goldspot` quotes USD only — IRT is filled from the cached USDT/IRT rate (from Bitpin's beat); on a cold start the first XAU tick may have `price_irt: null` until Bitpin's normalize() runs first

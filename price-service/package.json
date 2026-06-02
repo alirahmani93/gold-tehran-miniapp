@@ -10,8 +10,12 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "migrate": "tsx src/db/migrate.ts",
+    "migrate:prod": "node dist/db/migrate.js",
     "poll:once": "tsx src/scripts/poll-once.ts",
+    "poll:once:prod": "node dist/scripts/poll-once.js",
     "token:create": "tsx src/scripts/create-token.ts",
+    "token:create:prod": "node dist/scripts/create-token.js",
+    "inspect:prod": "node dist/scripts/inspect.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
